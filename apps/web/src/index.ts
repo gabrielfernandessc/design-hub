@@ -30,7 +30,7 @@ const app = new Elysia()
   .use(webhookRoutes)
   .use(paymentRoutes)
 
-// Serve the frontend
+// Serve the frontend HTML
 app.get('/', async () => {
   const html = `<!DOCTYPE html>
 <html lang="pt-BR">
@@ -42,10 +42,21 @@ app.get('/', async () => {
 </head>
 <body class="bg-gray-50">
   <div id="root"></div>
-  <script type="module" src="/main.js"></script>
+  <script src="/app.js"></script>
 </body>
 </html>`
   return new Response(html, { headers: { 'Content-Type': 'text/html' } })
+})
+
+// Serve the frontend JavaScript
+app.get('/app.js', async () => {
+  const jsPath = join(process.cwd(), 'apps', 'web', 'public', 'app.js')
+  try {
+    const js = await Bun.file(jsPath).text()
+    return new Response(js, { headers: { 'Content-Type': 'application/javascript' } })
+  } catch {
+    return new Response('// App not found', { headers: { 'Content-Type': 'application/javascript' } })
+  }
 })
 
 app.listen(3000)
