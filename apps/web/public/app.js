@@ -28,13 +28,14 @@ async function api(path, options = {}) {
 }
 
 // Render functions
-function renderApp() {
+async function renderApp() {
   const root = document.getElementById('root')
+  const pageContent = await renderPage()
   root.innerHTML = `
     <div style="display:flex;min-height:100vh;background:${COLORS.paper};font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;">
       ${renderSidebar()}
       <main style="flex:1;padding:2rem;overflow-y:auto;">
-        ${renderPage()}
+        ${pageContent}
       </main>
     </div>
   `
@@ -77,13 +78,13 @@ function renderSidebar() {
   `
 }
 
-function renderPage() {
+async function renderPage() {
   switch(currentPage) {
-    case 'dashboard': return renderDashboard()
-    case 'cards': return renderCards()
-    case 'projects': return renderProjects()
+    case 'dashboard': return await renderDashboard()
+    case 'cards': return await renderCards()
+    case 'projects': return await renderProjects()
     case 'settings': return renderSettings()
-    default: return renderDashboard()
+    default: return await renderDashboard()
   }
 }
 

@@ -11,7 +11,6 @@ import { notificationRoutes } from './api/notifications'
 import { webhookRoutes } from './api/webhooks'
 import { paymentRoutes } from './api/payments'
 import { join } from 'path'
-import { supabase } from '@design-hub/config'
 
 const app = new Elysia()
   .use(cors())
@@ -21,42 +20,7 @@ const app = new Elysia()
       secret: process.env.JWT_SECRET || 'dev-secret',
     })
   )
-
-// Test endpoint FIRST
-app.get('/api/test', async () => {
-  console.log('=== Test endpoint called ===')
-  
-  const supabaseUrl = process.env.SUPABASE_URL
-  const supabaseKey = process.env.SUPABASE_ANON_KEY
-  
-  console.log('SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING')
-  console.log('SUPABASE_ANON_KEY:', supabaseKey ? 'SET' : 'MISSING')
-  
-  try {
-    const { data, error } = await supabase
-      .from('users')
-      .select('*')
-      .limit(5)
-    
-    console.log('Query result:', JSON.stringify({ data, error }))
-    
-    return {
-      status: 'ok',
-      env: {
-        supabaseUrl: supabaseUrl ? 'SET' : 'MISSING',
-        supabaseKey: supabaseKey ? 'SET' : 'MISSING'
-      },
-      data: data,
-      error: error
-    }
-  } catch (err) {
-    console.error('Error:', err)
-    return { status: 'error', message: err.message }
-  }
-})
-
-// Then API routes
-app.use(authRoutes)
+  .use(authRoutes)
   .use(userRoutes)
   .use(projectRoutes)
   .use(cardRoutes)
@@ -65,6 +29,9 @@ app.use(authRoutes)
   .use(notificationRoutes)
   .use(webhookRoutes)
   .use(paymentRoutes)
+
+// Health check endpoint
+app.get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
 
 // Serve the frontend HTML
 app.get('/', async () => {
@@ -86,7 +53,6 @@ app.get('/', async () => {
 
 // Serve the frontend JavaScript
 app.get('/app.js', async () => {
-  // Try multiple paths
   const paths = [
     join(process.cwd(), 'apps', 'web', 'public', 'app.js'),
     join(process.cwd(), 'public', 'app.js'),
