@@ -7,10 +7,12 @@ export function getSupabase(): SupabaseClient {
     const supabaseUrl = process.env.SUPABASE_URL
     const supabaseKey = process.env.SUPABASE_ANON_KEY
     
+    console.log('Initializing Supabase client...')
+    console.log('SUPABASE_URL:', supabaseUrl ? `${supabaseUrl.substring(0, 30)}...` : 'MISSING')
+    console.log('SUPABASE_ANON_KEY:', supabaseKey ? `${supabaseKey.substring(0, 20)}...` : 'MISSING')
+    
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Missing Supabase environment variables')
-      console.log('SUPABASE_URL:', supabaseUrl ? 'set' : 'missing')
-      console.log('SUPABASE_ANON_KEY:', supabaseKey ? 'set' : 'missing')
+      console.error('ERROR: Missing Supabase environment variables!')
     }
     
     supabaseClient = createClient(supabaseUrl || '', supabaseKey || '')
