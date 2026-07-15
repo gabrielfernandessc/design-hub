@@ -10,6 +10,9 @@ import { categoryRoutes } from './api/categories'
 import { notificationRoutes } from './api/notifications'
 import { webhookRoutes } from './api/webhooks'
 import { paymentRoutes } from './api/payments'
+import { serveStatic } from '@elysiajs/static'
+import { readdir } from 'fs/promises'
+import { join } from 'path'
 
 const app = new Elysia()
   .use(cors())
@@ -28,8 +31,22 @@ const app = new Elysia()
   .use(notificationRoutes)
   .use(webhookRoutes)
   .use(paymentRoutes)
-  .get('/', () => ({ message: 'Design Hub API' }))
-  .listen(3000)
+
+// Serve static files from the client build
+app.use(serveStatic({ root: './dist/client' }))
+
+// Fallback to index.html for SPA routing
+app.get('*', async () => {
+  const indexPath = join(process.cwd(), 'dist', 'client', 'index.html')
+  try {
+    const html = await Bun.file(indexPath).text()
+    return new Response(html, { headers: { 'Content-Type': 'text/html' } })
+  } catch {
+    return { message: 'Design Hub API' }
+  }
+})
+
+app.listen(3000)
 
 console.log(`🦊 Server running at http://localhost:${app.server?.port}`)
 
