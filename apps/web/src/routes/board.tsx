@@ -1,5 +1,6 @@
 import React from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from '../lib/api'
 
 const columns = [
   { id: 'new', title: 'New', color: 'bg-blue-500' },
@@ -13,16 +14,12 @@ export const Board = () => {
 
   const { data: cards, isLoading } = useQuery({
     queryKey: ['cards'],
-    queryFn: () => fetch('/api/cards').then((res) => res.json()),
+    queryFn: () => api.get('/api/cards'),
   })
 
   const updateStatus = useMutation({
     mutationFn: ({ cardId, status }: { cardId: string; status: string }) =>
-      fetch(`/api/cards/${cardId}/status`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      }),
+      api.patch(`/api/cards/${cardId}/status`, { status }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['cards'] })
     },

@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { api } from '../../lib/api'
 
 export const CardDetail = () => {
   // Get cardId from URL path
@@ -11,21 +12,16 @@ export const CardDetail = () => {
 
   const { data: card, isLoading } = useQuery({
     queryKey: ['card', cardId],
-    queryFn: () => fetch(`/api/cards/${cardId}`).then((res) => res.json()),
+    queryFn: () => api.get(`/api/cards/${cardId}`),
   })
 
   const { data: users } = useQuery({
     queryKey: ['users'],
-    queryFn: () => fetch('/api/users').then((res) => res.json()),
+    queryFn: () => api.get('/api/users'),
   })
 
   const updateCard = useMutation({
-    mutationFn: (data: any) =>
-      fetch(`/api/cards/${cardId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }),
+    mutationFn: (data: any) => api.put(`/api/cards/${cardId}`, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['card', cardId] })
     },
@@ -33,11 +29,7 @@ export const CardDetail = () => {
 
   const addComment = useMutation({
     mutationFn: (content: string) =>
-      fetch(`/api/cards/${cardId}/comments`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content, authorId: 'current-user-id' }),
-      }),
+      api.post(`/api/cards/${cardId}/comments`, { content, authorId: 'current-user-id' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['card', cardId] })
       setNewComment('')

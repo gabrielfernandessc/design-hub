@@ -1,6 +1,7 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { api } from '../lib/api'
 
 export const CardsList = () => {
   const [search, setSearch] = React.useState('')
@@ -12,7 +13,7 @@ export const CardsList = () => {
     queryFn: () => {
       const params = new URLSearchParams()
       if (statusFilter !== 'all') params.append('status', statusFilter)
-      return fetch(`/api/cards?${params}`).then((res) => res.json())
+      return api.get(`/api/cards?${params}`)
     },
   })
 

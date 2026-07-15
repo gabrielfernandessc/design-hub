@@ -1,15 +1,16 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { api } from '../lib/api'
 
 export const Dashboard = () => {
   const { data: cards, isLoading } = useQuery({
     queryKey: ['cards'],
-    queryFn: () => fetch('/api/cards').then((res) => res.json()),
+    queryFn: () => api.get('/api/cards'),
   })
 
   const { data: notifications } = useQuery({
     queryKey: ['notifications'],
-    queryFn: () => fetch('/api/notifications').then((res) => res.json()),
+    queryFn: () => api.get('/api/notifications'),
   })
 
   if (isLoading) {

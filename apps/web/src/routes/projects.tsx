@@ -1,11 +1,12 @@
 import React from 'react'
 import { Link } from '@tanstack/react-router'
 import { useQuery } from '@tanstack/react-query'
+import { api } from '../lib/api'
 
 export const Projects = () => {
   const { data: projects, isLoading } = useQuery({
     queryKey: ['projects'],
-    queryFn: () => fetch('/api/projects').then((res) => res.json()),
+    queryFn: () => api.get('/api/projects'),
   })
 
   if (isLoading) {

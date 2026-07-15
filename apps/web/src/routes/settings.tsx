@@ -1,22 +1,23 @@
 import React from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { api } from '../lib/api'
 
 export const Settings = () => {
   const [activeTab, setActiveTab] = React.useState('profile')
 
   const { data: users } = useQuery({
     queryKey: ['users'],
-    queryFn: () => fetch('/api/users').then((res) => res.json()),
+    queryFn: () => api.get('/api/users'),
   })
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => fetch('/api/categories').then((res) => res.json()),
+    queryFn: () => api.get('/api/categories'),
   })
 
   const { data: tags } = useQuery({
     queryKey: ['tags'],
-    queryFn: () => fetch('/api/tags').then((res) => res.json()),
+    queryFn: () => api.get('/api/tags'),
   })
 
   return (
