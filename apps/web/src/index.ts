@@ -5,7 +5,6 @@ import { authRoutes } from './api/auth'
 import { userRoutes } from './api/users'
 import { projectRoutes } from './api/projects'
 import { cardRoutes } from './api/cards'
-import { commentRoutes } from './api/comments'
 import { tagRoutes } from './api/tags'
 import { categoryRoutes } from './api/categories'
 import { notificationRoutes } from './api/notifications'
@@ -24,7 +23,6 @@ const app = new Elysia()
   .use(userRoutes)
   .use(projectRoutes)
   .use(cardRoutes)
-  .use(commentRoutes)
   .use(tagRoutes)
   .use(categoryRoutes)
   .use(notificationRoutes)

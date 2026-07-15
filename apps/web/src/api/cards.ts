@@ -22,7 +22,7 @@ export const cardRoutes = new Elysia({ prefix: '/api/cards' })
   .get('/:id', async ({ params }) => {
     const { data, error } = await supabase
       .from('cards')
-      .select('*, assignee:users!cards_assignee_id_fkey(*), project:projects(*), category:categories(*), comments(*), attachments(*), tags(*)')
+      .select('*, assignee:users!cards_assignee_id_fkey(*), project:projects(*), category:categories(*), comments(*, author:users(*)), attachments(*), tags(*)')
       .eq('id', params.id)
       .single()
 
@@ -133,6 +133,37 @@ export const cardRoutes = new Elysia({ prefix: '/api/cards' })
     {
       body: t.Object({
         assigneeId: t.String(),
+      }),
+    }
+  )
+  .get('/:id/comments', async ({ params }) => {
+    const { data, error } = await supabase
+      .from('comments')
+      .select('*, author:users(*)')
+      .eq('card_id', params.id)
+
+    if (error) throw error
+    return data
+  })
+  .post(
+    '/:id/comments',
+    async ({ params, body }) => {
+      const { data, error } = await supabase
+        .from('comments')
+        .insert({
+          ...body,
+          card_id: params.id,
+        })
+        .select()
+        .single()
+
+      if (error) throw error
+      return data
+    },
+    {
+      body: t.Object({
+        content: t.String(),
+        authorId: t.String(),
       }),
     }
   )
