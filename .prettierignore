@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+
+# Build
+dist/
+build/
+.next/
+out/
+
+# Coverage
+coverage/
+
+# Package locks
+bun.lockb
+package-lock.json
+yarn.lock
+
+# Generated
+*.generated.ts
+*.generated.tsx
+
+# Environment
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
