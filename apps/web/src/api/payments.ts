@@ -1,9 +1,8 @@
 import { Elysia, t } from 'elysia'
 import Stripe from 'stripe'
 
-const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
-  apiVersion: '2026-06-24.dahlia',
-})
+const stripeSecretKey = process.env.STRIPE_SECRET_KEY
+const stripe = stripeSecretKey ? new Stripe(stripeSecretKey) : null
 
 const PLANS = {
   starter: { name: 'Starter', price: 9700 },
@@ -18,6 +17,10 @@ export const paymentRoutes = new Elysia({ prefix: '/api/payments' })
   .post(
     '/checkout',
     async ({ body }) => {
+      if (!stripe) {
+        return { error: 'Stripe not configured' }
+      }
+
       const { planId, userId, userEmail } = body
 
       if (!PLANS[planId as keyof typeof PLANS]) {
@@ -59,6 +62,10 @@ export const paymentRoutes = new Elysia({ prefix: '/api/payments' })
     }
   )
   .post('/webhook', async ({ request }) => {
+    if (!stripe) {
+      return { error: 'Stripe not configured' }
+    }
+
     const body = await request.text()
     const sig = request.headers.get('stripe-signature')!
 
