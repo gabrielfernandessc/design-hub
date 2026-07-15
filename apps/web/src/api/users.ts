@@ -3,14 +3,25 @@ import { supabase } from '@design-hub/config'
 
 export const userRoutes = new Elysia({ prefix: '/api/users' })
   .get('/', async () => {
-    console.log('Fetching users...')
-    const { data, error } = await supabase
-      .from('users')
-      .select('id, email, name, role, avatar, is_active')
-
-    console.log('Users query result:', { data, error })
-    if (error) throw error
-    return data
+    console.log('=== Fetching users ===')
+    try {
+      const { data, error, count } = await supabase
+        .from('users')
+        .select('*')
+      
+      console.log('Query result:', JSON.stringify({ data, error, count }))
+      
+      if (error) {
+        console.error('Supabase error:', error)
+        return { error: error.message }
+      }
+      
+      console.log('Users found:', data?.length || 0)
+      return data || []
+    } catch (err) {
+      console.error('Exception:', err)
+      return { error: 'Failed to fetch users' }
+    }
   })
   .get('/:id', async ({ params }) => {
     const { data, error } = await supabase
