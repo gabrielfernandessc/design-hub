@@ -10,7 +10,6 @@ import { categoryRoutes } from './api/categories'
 import { notificationRoutes } from './api/notifications'
 import { webhookRoutes } from './api/webhooks'
 import { paymentRoutes } from './api/payments'
-import { join } from 'path'
 
 const app = new Elysia()
   .use(cors())
@@ -29,42 +28,8 @@ const app = new Elysia()
   .use(notificationRoutes)
   .use(webhookRoutes)
   .use(paymentRoutes)
-
-// Serve the frontend HTML
-app.get('/', async () => {
-  const htmlPath = join(process.cwd(), 'dist', 'client', 'main.js')
-  try {
-    const js = await Bun.file(htmlPath).text()
-    return new Response(`<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Design Hub</title>
-  <link rel="stylesheet" href="/main.css">
-</head>
-<body>
-  <div id="root"></div>
-  <script>${js}</script>
-</body>
-</html>`, { headers: { 'Content-Type': 'text/html' } })
-  } catch {
-    return { message: 'Design Hub API' }
-  }
-})
-
-// Serve CSS
-app.get('/main.css', async () => {
-  const cssPath = join(process.cwd(), 'dist', 'client', 'main.css')
-  try {
-    const css = await Bun.file(cssPath).text()
-    return new Response(css, { headers: { 'Content-Type': 'text/css' } })
-  } catch {
-    return new Response('', { headers: { 'Content-Type': 'text/css' } })
-  }
-})
-
-app.listen(3000)
+  .get('/', () => ({ message: 'Design Hub API', status: 'running' }))
+  .listen(3000)
 
 console.log(`🦊 Server running at http://localhost:${app.server?.port}`)
 
