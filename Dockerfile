@@ -22,4 +22,4 @@ WORKDIR /app
 COPY --from=base /app .
 
 EXPOSE 3000
-CMD ["bun", "run", "start"]
+CMD ["bun", "run", "--filter=@design-hub/web", "start"]
