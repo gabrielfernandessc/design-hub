@@ -1,9 +1,29 @@
-import { createClient } from '@supabase/supabase-js'
+import { createClient, SupabaseClient } from '@supabase/supabase-js'
 
-const supabaseUrl = process.env.SUPABASE_URL || ''
-const supabaseKey = process.env.SUPABASE_ANON_KEY || ''
+let supabaseClient: SupabaseClient | null = null
 
-export const supabase = createClient(supabaseUrl, supabaseKey)
+export function getSupabase(): SupabaseClient {
+  if (!supabaseClient) {
+    const supabaseUrl = process.env.SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_ANON_KEY
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Missing Supabase environment variables')
+      console.log('SUPABASE_URL:', supabaseUrl ? 'set' : 'missing')
+      console.log('SUPABASE_ANON_KEY:', supabaseKey ? 'set' : 'missing')
+    }
+    
+    supabaseClient = createClient(supabaseUrl || '', supabaseKey || '')
+  }
+  return supabaseClient
+}
+
+// Export for backward compatibility
+export const supabase = new Proxy({} as SupabaseClient, {
+  get(target, prop) {
+    return (getSupabase() as any)[prop]
+  }
+})
 
 // For Drizzle ORM compatibility, we'll use a wrapper
 // that converts Supabase queries to a Drizzle-like interface
