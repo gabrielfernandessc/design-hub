@@ -50,13 +50,25 @@ app.get('/', async () => {
 
 // Serve the frontend JavaScript
 app.get('/app.js', async () => {
-  const jsPath = join(process.cwd(), 'apps', 'web', 'public', 'app.js')
-  try {
-    const js = await Bun.file(jsPath).text()
-    return new Response(js, { headers: { 'Content-Type': 'application/javascript' } })
-  } catch {
-    return new Response('// App not found', { headers: { 'Content-Type': 'application/javascript' } })
+  // Try multiple paths
+  const paths = [
+    join(process.cwd(), 'apps', 'web', 'public', 'app.js'),
+    join(process.cwd(), 'public', 'app.js'),
+    join(process.cwd(), 'app.js'),
+  ]
+  
+  for (const jsPath of paths) {
+    try {
+      const js = await Bun.file(jsPath).text()
+      if (js && !js.includes('not found')) {
+        return new Response(js, { headers: { 'Content-Type': 'application/javascript' } })
+      }
+    } catch {
+      // Continue to next path
+    }
   }
+  
+  return new Response('// App not found', { headers: { 'Content-Type': 'application/javascript' } })
 })
 
 app.listen(3000)
