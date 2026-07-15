@@ -11,6 +11,7 @@ import { notificationRoutes } from './api/notifications'
 import { webhookRoutes } from './api/webhooks'
 import { paymentRoutes } from './api/payments'
 import { join } from 'path'
+import { supabase } from '@design-hub/config'
 
 const app = new Elysia()
   .use(cors())
@@ -29,6 +30,39 @@ const app = new Elysia()
   .use(notificationRoutes)
   .use(webhookRoutes)
   .use(paymentRoutes)
+
+// Test endpoint to check Supabase connection
+app.get('/api/test', async () => {
+  console.log('=== Test endpoint called ===')
+  
+  const supabaseUrl = process.env.SUPABASE_URL
+  const supabaseKey = process.env.SUPABASE_ANON_KEY
+  
+  console.log('SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING')
+  console.log('SUPABASE_ANON_KEY:', supabaseKey ? 'SET' : 'MISSING')
+  
+  try {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .limit(5)
+    
+    console.log('Query result:', JSON.stringify({ data, error }))
+    
+    return {
+      status: 'ok',
+      env: {
+        supabaseUrl: supabaseUrl ? 'SET' : 'MISSING',
+        supabaseKey: supabaseKey ? 'SET' : 'MISSING'
+      },
+      data: data,
+      error: error
+    }
+  } catch (err) {
+    console.error('Error:', err)
+    return { status: 'error', message: err.message }
+  }
+})
 
 // Serve the frontend HTML
 app.get('/', async () => {
