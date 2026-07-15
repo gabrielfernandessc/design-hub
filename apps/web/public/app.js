@@ -12,6 +12,7 @@ const COLORS = {
 let currentPage = 'login'
 let currentUser = null
 let authToken = null
+let notifications = []
 
 // API helper
 async function api(path, options = {}) {
@@ -114,6 +115,7 @@ function renderSidebar() {
     { id: 'cards', label: 'All Requests', icon: '☰' },
     { id: 'projects', label: 'Projects', icon: '◫' },
     { id: 'users', label: 'Users', icon: '☺' },
+    { id: 'notifications', label: 'Notifications', icon: '🔔' },
     { id: 'settings', label: 'Settings', icon: '⚙' },
   ]
 
@@ -155,6 +157,7 @@ async function renderPage() {
     case 'cards': return await renderCards()
     case 'projects': return await renderProjects()
     case 'users': return await renderUsers()
+    case 'notifications': return await renderNotifications()
     case 'settings': return renderSettings()
     default: return await renderDashboard()
   }
@@ -165,41 +168,58 @@ async function renderDashboard() {
   const newCards = cards.filter(c => c.status === 'new').length
   const inProgress = cards.filter(c => c.status === 'in_progress').length
   const urgent = cards.filter(c => c.priority === 'high').length
+  const notifs = await api('/notifications')
+  const unreadCount = notifs.filter(n => !n.is_read).length
 
   return `
     <div style="margin-bottom:2rem;">
       <h1 style="font-size:1.875rem;font-weight:700;color:${COLORS.ink};">Dashboard</h1>
       <p style="color:${COLORS.muted};margin-top:0.25rem;">Overview of your design requests</p>
     </div>
-    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1.5rem;margin-bottom:2rem;">
-      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
-        <p style="font-size:0.75rem;color:${COLORS.muted};text-transform:uppercase;">Total</p>
-        <p style="font-size:2rem;font-weight:700;color:${COLORS.ink};">${cards.length}</p>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2rem;">
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.25rem;border:1px solid ${COLORS.border};">
+        <p style="font-size:0.625rem;color:${COLORS.muted};text-transform:uppercase;letter-spacing:0.05em;">Total</p>
+        <p style="font-size:1.75rem;font-weight:700;color:${COLORS.ink};">${cards.length}</p>
       </div>
-      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
-        <p style="font-size:0.75rem;color:${COLORS.muted};text-transform:uppercase;">New</p>
-        <p style="font-size:2rem;font-weight:700;color:${COLORS.accent};">${newCards}</p>
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.25rem;border:1px solid ${COLORS.border};">
+        <p style="font-size:0.625rem;color:${COLORS.muted};text-transform:uppercase;letter-spacing:0.05em;">New</p>
+        <p style="font-size:1.75rem;font-weight:700;color:${COLORS.accent};">${newCards}</p>
       </div>
-      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
-        <p style="font-size:0.75rem;color:${COLORS.muted};text-transform:uppercase;">In Progress</p>
-        <p style="font-size:2rem;font-weight:700;color:#f59e0b;">${inProgress}</p>
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.25rem;border:1px solid ${COLORS.border};">
+        <p style="font-size:0.625rem;color:${COLORS.muted};text-transform:uppercase;letter-spacing:0.05em;">In Progress</p>
+        <p style="font-size:1.75rem;font-weight:700;color:#f59e0b;">${inProgress}</p>
       </div>
-      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
-        <p style="font-size:0.75rem;color:${COLORS.muted};text-transform:uppercase;">Urgent</p>
-        <p style="font-size:2rem;font-weight:700;color:#ef4444;">${urgent}</p>
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.25rem;border:1px solid ${COLORS.border};">
+        <p style="font-size:0.625rem;color:${COLORS.muted};text-transform:uppercase;letter-spacing:0.05em;">Urgent</p>
+        <p style="font-size:1.75rem;font-weight:700;color:#ef4444;">${urgent}</p>
+      </div>
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.25rem;border:1px solid ${COLORS.border};">
+        <p style="font-size:0.625rem;color:${COLORS.muted};text-transform:uppercase;letter-spacing:0.05em;">Notifications</p>
+        <p style="font-size:1.75rem;font-weight:700;color:#8b5cf6;">${unreadCount}</p>
       </div>
     </div>
-    <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
-      <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Recent Requests</h2>
-      ${cards.slice(0, 5).map(card => `
-        <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid ${COLORS.border};">
-          <div>
-            <p style="font-weight:500;">${card.title}</p>
-            <p style="font-size:0.75rem;color:${COLORS.muted};">${card.category?.name || 'No category'}</p>
+    <div style="display:grid;grid-template-columns:2fr 1fr;gap:1.5rem;">
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Recent Requests</h2>
+        ${cards.slice(0, 5).map(card => `
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:0.75rem 0;border-bottom:1px solid ${COLORS.border};">
+            <div>
+              <p style="font-weight:500;">${card.title}</p>
+              <p style="font-size:0.75rem;color:${COLORS.muted};">${card.category?.name || 'No category'}</p>
+            </div>
+            <span style="padding:0.25rem 0.75rem;font-size:0.75rem;border-radius:9999px;background:${card.priority === 'high' ? '#fef2f2' : card.priority === 'medium' ? '#fffbeb' : '#f3f4f6'};color:${card.priority === 'high' ? '#dc2626' : card.priority === 'medium' ? '#d97706' : '#374151'};">${card.priority}</span>
           </div>
-          <span style="padding:0.25rem 0.75rem;font-size:0.75rem;border-radius:9999px;background:${card.priority === 'high' ? '#fef2f2' : card.priority === 'medium' ? '#fffbeb' : '#f3f4f6'};color:${card.priority === 'high' ? '#dc2626' : card.priority === 'medium' ? '#d97706' : '#374151'};">${card.priority}</span>
-        </div>
-      `).join('') || '<p style="color:${COLORS.muted};text-align:center;padding:2rem;">No requests yet.</p>'}
+        `).join('') || '<p style="color:${COLORS.muted};text-align:center;padding:2rem;">No requests yet.</p>'}
+      </div>
+      <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.5rem;border:1px solid ${COLORS.border};">
+        <h2 style="font-size:1rem;font-weight:600;margin-bottom:1rem;">Recent Notifications</h2>
+        ${notifs.slice(0, 5).map(notif => `
+          <div style="padding:0.5rem 0;border-bottom:1px solid ${COLORS.border};${notif.is_read ? 'opacity:0.5;' : ''}">
+            <p style="font-weight:500;font-size:0.875rem;">${notif.title}</p>
+            <p style="font-size:0.75rem;color:${COLORS.muted};">${notif.message}</p>
+          </div>
+        `).join('') || '<p style="color:${COLORS.muted};text-align:center;padding:1rem;">No notifications.</p>'}
+      </div>
     </div>
   `
 }
@@ -424,6 +444,31 @@ async function renderProjects() {
   `
 }
 
+async function renderNotifications() {
+  const notifs = await api('/notifications')
+  return `
+    <div style="margin-bottom:2rem;">
+      <h1 style="font-size:1.875rem;font-weight:700;color:${COLORS.ink};">Notifications</h1>
+      <p style="color:${COLORS.muted};">Stay updated on your design requests</p>
+    </div>
+    <div style="background:${COLORS.surface};border-radius:0.75rem;border:1px solid ${COLORS.border};">
+      ${notifs.length === 0 ? '<p style="padding:2rem;text-align:center;color:${COLORS.muted};">No notifications yet.</p>' : ''}
+      ${notifs.map(notif => `
+        <div style="padding:1rem 1.5rem;border-bottom:1px solid ${COLORS.border};${notif.is_read ? 'opacity:0.6;' : ''}">
+          <div style="display:flex;align-items:center;justify-content:space-between;">
+            <div>
+              <p style="font-weight:500;">${notif.title}</p>
+              <p style="font-size:0.875rem;color:${COLORS.muted};">${notif.message}</p>
+              <p style="font-size:0.75rem;color:${COLORS.muted};margin-top:0.25rem;">${new Date(notif.created_at).toLocaleString()}</p>
+            </div>
+            ${!notif.is_read ? `<button onclick="markNotificationRead('${notif.id}')" style="background:${COLORS.accent};color:white;padding:0.25rem 0.75rem;border-radius:0.25rem;border:none;cursor:pointer;font-size:0.75rem;">Mark Read</button>` : ''}
+          </div>
+        </div>
+      `).join('')}
+    </div>
+  `
+}
+
 function renderSettings() {
   return `
     <div style="margin-bottom:2rem;">
@@ -450,6 +495,12 @@ function renderSettings() {
 // Navigation
 function navigate(page) {
   currentPage = page
+  renderApp()
+}
+
+// Notification functions
+async function markNotificationRead(notifId) {
+  await api(`/notifications/${notifId}/read`, { method: 'PATCH' })
   renderApp()
 }
 
