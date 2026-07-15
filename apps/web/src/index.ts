@@ -21,17 +21,8 @@ const app = new Elysia()
       secret: process.env.JWT_SECRET || 'dev-secret',
     })
   )
-  .use(authRoutes)
-  .use(userRoutes)
-  .use(projectRoutes)
-  .use(cardRoutes)
-  .use(tagRoutes)
-  .use(categoryRoutes)
-  .use(notificationRoutes)
-  .use(webhookRoutes)
-  .use(paymentRoutes)
 
-// Test endpoint to check Supabase connection
+// Test endpoint FIRST
 app.get('/api/test', async () => {
   console.log('=== Test endpoint called ===')
   
@@ -63,6 +54,17 @@ app.get('/api/test', async () => {
     return { status: 'error', message: err.message }
   }
 })
+
+// Then API routes
+app.use(authRoutes)
+  .use(userRoutes)
+  .use(projectRoutes)
+  .use(cardRoutes)
+  .use(tagRoutes)
+  .use(categoryRoutes)
+  .use(notificationRoutes)
+  .use(webhookRoutes)
+  .use(paymentRoutes)
 
 // Serve the frontend HTML
 app.get('/', async () => {
