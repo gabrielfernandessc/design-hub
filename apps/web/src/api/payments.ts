@@ -1,11 +1,15 @@
 import { Elysia, t } from 'elysia'
-import {
-  createCheckoutSession,
-  createPortalSession,
-  handleWebhookEvent,
-  PLANS,
-} from '@design-hub/config/services/stripe'
-import { stripe } from '@design-hub/config/services/stripe'
+import Stripe from 'stripe'
+
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
+  apiVersion: '2026-06-24.dahlia',
+})
+
+const PLANS = {
+  starter: { name: 'Starter', price: 9700 },
+  pro: { name: 'Pro', price: 19700 },
+  enterprise: { name: 'Enterprise', price: 49700 },
+}
 
 export const paymentRoutes = new Elysia({ prefix: '/api/payments' })
   .get('/plans', async () => {
@@ -20,7 +24,29 @@ export const paymentRoutes = new Elysia({ prefix: '/api/payments' })
         return { error: 'Invalid plan' }
       }
 
-      const session = await createCheckoutSession(planId as keyof typeof PLANS, userId, userEmail)
+      const plan = PLANS[planId as keyof typeof PLANS]
+
+      const session = await stripe.checkout.sessions.create({
+        payment_method_types: ['card'],
+        customer_email: userEmail,
+        line_items: [
+          {
+            price_data: {
+              currency: 'usd',
+              product_data: {
+                name: `Design Hub - ${plan.name}`,
+              },
+              unit_amount: plan.price,
+              recurring: { interval: 'month' },
+            },
+            quantity: 1,
+          },
+        ],
+        mode: 'subscription',
+        success_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?success=true`,
+        cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/settings/billing?canceled=true`,
+        metadata: { userId, planId },
+      })
 
       return { sessionId: session.id, url: session.url }
     },
@@ -29,21 +55,6 @@ export const paymentRoutes = new Elysia({ prefix: '/api/payments' })
         planId: t.String(),
         userId: t.String(),
         userEmail: t.String(),
-      }),
-    }
-  )
-  .post(
-    '/portal',
-    async ({ body }) => {
-      const { customerId } = body
-
-      const session = await createPortalSession(customerId)
-
-      return { url: session.url }
-    },
-    {
-      body: t.Object({
-        customerId: t.String(),
       }),
     }
   )
@@ -58,8 +69,6 @@ export const paymentRoutes = new Elysia({ prefix: '/api/payments' })
     } catch (err) {
       return { error: 'Webhook signature verification failed' }
     }
-
-    await handleWebhookEvent(event)
 
     return { received: true }
   })

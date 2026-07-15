@@ -1,2 +1,2 @@
 export * from './schema'
-export { db } from './db'
+export { db, supabase } from './db'
