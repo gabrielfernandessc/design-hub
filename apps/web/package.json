@@ -17,6 +17,7 @@
     "@design-hub/config": "workspace:*",
     "@elysiajs/cors": "^1.0.0",
     "@elysiajs/jwt": "^1.0.0",
+    "@elysiajs/static": "^1.0.0",
     "@supabase/supabase-js": "^2.110.6",
     "@tanstack/react-query": "^5.0.0",
     "@tanstack/react-router": "^1.0.0",
