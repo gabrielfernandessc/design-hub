@@ -172,9 +172,14 @@ async function renderDashboard() {
   const unreadCount = notifs.filter(n => !n.is_read).length
 
   return `
-    <div style="margin-bottom:2rem;">
-      <h1 style="font-size:1.875rem;font-weight:700;color:${COLORS.ink};">Dashboard</h1>
-      <p style="color:${COLORS.muted};margin-top:0.25rem;">Overview of your design requests</p>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
+      <div>
+        <h1 style="font-size:1.875rem;font-weight:700;color:${COLORS.ink};">Dashboard</h1>
+        <p style="color:${COLORS.muted};margin-top:0.25rem;">Overview of your design requests</p>
+      </div>
+      <button onclick="syncSpreadsheet()" style="background:${COLORS.accent};color:white;padding:0.75rem 1.5rem;border-radius:0.5rem;font-weight:500;border:none;cursor:pointer;display:flex;align-items:center;gap:0.5rem;">
+        <span>🔄</span> Sync Spreadsheet
+      </button>
     </div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:1rem;margin-bottom:2rem;">
       <div style="background:${COLORS.surface};border-radius:0.75rem;padding:1.25rem;border:1px solid ${COLORS.border};">
@@ -496,6 +501,29 @@ function renderSettings() {
 function navigate(page) {
   currentPage = page
   renderApp()
+}
+
+// Spreadsheet sync function
+async function syncSpreadsheet() {
+  const btn = event.target
+  btn.disabled = true
+  btn.innerHTML = '<span>⏳</span> Syncing...'
+  
+  try {
+    const result = await api('/spreadsheet/sync', { method: 'POST' })
+    
+    if (result.success) {
+      alert(`Sync complete!\n\nCreated: ${result.created}\nSkipped: ${result.skipped}\nErrors: ${result.errors}`)
+      renderApp()
+    } else {
+      alert('Sync failed: ' + result.error)
+    }
+  } catch (err) {
+    alert('Sync failed: ' + err.message)
+  }
+  
+  btn.disabled = false
+  btn.innerHTML = '<span>🔄</span> Sync Spreadsheet'
 }
 
 // Notification functions

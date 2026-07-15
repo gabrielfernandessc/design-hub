@@ -10,6 +10,7 @@ import { categoryRoutes } from './api/categories'
 import { notificationRoutes } from './api/notifications'
 import { webhookRoutes } from './api/webhooks'
 import { paymentRoutes } from './api/payments'
+import { spreadsheetRoutes } from './api/spreadsheet'
 import { join } from 'path'
 
 const app = new Elysia()
@@ -29,6 +30,7 @@ const app = new Elysia()
   .use(notificationRoutes)
   .use(webhookRoutes)
   .use(paymentRoutes)
+  .use(spreadsheetRoutes)
 
 // Health check endpoint
 app.get('/api/health', () => ({ status: 'ok', timestamp: new Date().toISOString() }))
